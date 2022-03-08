@@ -19,7 +19,7 @@ class Parallel {
   }
 
   public job(jobFunc: (done: DoneType) => void) {
-    const jobPromise: JobType = () => new Promise((resolve) => jobFunc(resolve));
+    const jobPromise: JobType = () => new Promise((resolve, reject) => jobFunc(resolve));
     this.jobs.push(jobPromise);
 
     return this;
@@ -33,9 +33,14 @@ class Parallel {
       const promises = chunk.map((job) => job());
       const response = await Promise.allSettled<string>(promises);
 
+      console.log(response)
+      
       for (const item of response) {
         if (item.status === "fulfilled") {
           result.push(item.value);
+        }
+        if (item.status === "rejected") {
+          result.push(item.reason);
         }
       }
     }
@@ -56,7 +61,7 @@ function step1(done: DoneType): void {
 }
 
 function step2(done: DoneType): void {
-  setTimeout(done, 10, "step2");
+  setTimeout(done, 10, 'step2');
 }
 
 function step3(done: DoneType): void {
